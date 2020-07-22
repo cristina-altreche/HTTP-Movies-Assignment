@@ -1,77 +1,81 @@
 import React, { useState, useEffect } from 'react'
-import {useParams, useHistory } from 'react-router-dom'
+import {useLocation, useParams, useHistory } from 'react-router-dom'
 import axios from 'axios'
 
-const initialMovie = {
+const initialForm = {
     title: "",
     director:"",
-    metascore:"",
-    stars: []
+    metascore: "",
 }
 
 const UpdateMovieForm = props => {
     const { push } = useHistory()
     //this is state for this component only 
-    const [movie, setMovie] = useState(initialMovie)
-    const { id } = useParams()
-
-    useEffect(() => {
-        axios.get(`http://localhost:5000/api/movies/${id}`)
-        .then(res => {
-            console.log(res)
-        })
-        .catch(err => console.log(err))
-    })
+    const [form, setForm] = useState(initialForm)
+    const location  = useLocation()
+    const  params  = useParams()
 
     const handleChange = e => {
-        e.persist()
-        setMovie({...movie, [e.target.name]: e.target.value})
+        setForm({...form, [e.target.name]: e.target.value})
     }
 
     const handleSubmit = e => {
         e.preventDefault()
         axios
-        .put(`http://localhost:5000/api/movies/${id}`, movie)
-        .then(res => {
-            props.setMovie(res.data)
-            push(`/${id}`)
-        })
-        .catch(err => console.log(err))
+            .put(`http://localhost:5000/api/movies/${form.id}`, form)
+            .then(() => {
+                axios
+                    .get("http://localhost:5000/api/movies")
+                    .then(res => {
+                        props.setMovieList(res.data)
+                        push(`/movies/${form.id}`)
+                    })
+                    .catch(err => console.log(err.response));
+            })
+            .catch(err => console.log(err))
     }
 
+
+    useEffect(() => {
+        if(location.state){
+            setForm(location.state)
+        }else{
+            axios
+                .get(`http://localhost:5000/api/movies/${params.id}`)
+                .then(res => setForm(res.data))        
+                .catch(err => console.log(err))
+        }
+    },[])
+
     return (
-        <div>
-            <h2>Update Movie</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                type="text"
-                name="title"
-                onChange={handleChange}
-                placeholder="Title"
-                value={movie.title}
-                />
-                <input
-                type="text"
-                name="director"
-                onChange={handleChange}
-                placeholder="Director"
-                value={movie.director}
-                />
-                <input
-                type="text"
-                name="metascore"
-                onChange={handleChange}
-                placeholder="Metascore"
-                value={movie.metascore}
-                />
-                <input
-                type="text"
-                name="stars"
-                onChange={handleChange}
-                placeholder="Actors"
-                value={movie.stars}
-                />
-                <button>Update</button>
+        <div className='form-container'>
+            <h1>- Update a Movie -</h1>
+            <form onSubmit={handleSubmit} className='update-form'>
+                <label>Title: &nbsp;
+                    <input
+                    type='text'
+                    name='title'
+                    value={form.title}
+                    onChange={handleChange}
+                    />
+                </label>
+                <label>Director: &nbsp;
+                    <input 
+                    type='text'
+                    name='director'
+                    value={form.director}
+                    onChange={handleChange}
+                    />
+                </label>
+                <label>Metascore: &nbsp;
+                    <input 
+                    type='number'
+                    name='metascore'
+                    value={form.metascore}
+                    onChange={handleChange}
+                    />
+                </label>
+                <button type='submit'>Update</button>
             </form>
         </div>
     )

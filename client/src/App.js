@@ -27,17 +27,23 @@ const App = () => {
 
   return (
     <>
-      <SavedList list={savedList} />
+    <SavedList list={savedList} />
 
-      <Route exact path="/">
-        <MovieList movies={movieList} />
-      </Route>
+    <Route exact path="/">
+      <MovieList movies={movieList} />
+    </Route>
 
-      <Route path="/movies/:id">
-        <Movie addToSavedList={addToSavedList} />
-      </Route>
-      <Route path="/update-movie/:id" render={()=> <UpdateMovieForm movieList={movieList} setMovieList={setMovieList}/>}/>
-    </>
+    <Route path='/update-movie/:id'>
+      <UpdateMovieForm setMovieList={setMovieList}/>
+    </Route>
+
+    <Route path="/movies/:id">
+      <Movie 
+      setMovieList={setMovieList}
+      addToSavedList={addToSavedList} 
+      />
+    </Route>
+  </>
   );
 };
 
